@@ -1,0 +1,68 @@
+######## Import bibliotek ########
+import pandas as pd
+import numpy as np 
+import matplotlib.pyplot as plt
+
+######## Odczyt danych ########
+df = pd.read_csv('C:/Users/lenovo/Desktop/Analiza danych - R/Titanic_train.csv')
+
+######## Tworzenie przykładowych danych ########
+usecols=["Survived","Pclass","Sex","Age","SibSp","Parch","Fare","Embarked"]
+df2 = df[usecols]
+
+######## Sprawdzanie danych ########
+df2.isna().sum()
+
+######## Zamiana ,,NA" średnią na ########
+df2['Age'].fillna(value=df2['Age'].mean(), inplace=True)
+
+######## Usuwanie ,,NA" ########
+df2 = df2.dropna(axis=0)
+
+######## Transforamcja danych ########
+df2.Sex[df2.Sex == 'male'] = 1
+df2.Sex[df2.Sex == 'female'] = 0
+df2.Embarked[df2.Embarked == 'S'] = 0
+df2.Embarked[df2.Embarked == 'C'] = 1
+df2.Embarked[df2.Embarked == 'Q'] = 2
+
+######## TRAIN I TEST ########
+trainx = df2.iloc[0:800,1:]
+testx = df2.iloc[800:,1:] 
+trainy = df2.iloc[0:800,0]
+testy = df2.iloc[800:,0] 
+
+######## Regresja logistyczna ########
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, confusion_matrix
+
+model1 = LogisticRegression(solver='liblinear', random_state=0)
+model1.fit(trainx, trainy)
+model1 = LogisticRegression(solver='liblinear', random_state=0).fit(trainx, trainy)
+pred1=model1.predict(testx)
+
+########Las losowy
+from sklearn.ensemble import RandomForestClassifier
+
+clf=RandomForestClassifier(n_estimators=100)
+clf.fit(trainx,trainy)
+pred2=clf.predict(testx)
+
+######## Bayes ########
+from sklearn.preprocessing import StandardScaler
+from sklearn.naive_bayes import GaussianNB
+
+sc = StandardScaler()
+train_x = sc.fit_transform(trainx)
+test_x = sc.transform(testx)
+
+classifier = GaussianNB()
+classifier.fit(train_x, trainy)
+pred3 =  classifier.predict(test_x)
+
+
+######## Walidacja ########
+
+(sum(testy == pred1))/len(testy)
+(sum(testy == pred2))/len(testy)
+(sum(testy == pred3))/len(testy)
